@@ -11,15 +11,25 @@ struct s_parameter {
 // Parameter liste exportieren:
 extern const struct s_parameter parameter_liste[];
 
+/*
+ * HEIZKREIS  -> HEATING CIRCUIT
+ * BRENNER    -> BURNER
+ * WARMWASSER -> HOT WATER
+ * ALLGEMEIN  -> GENERAL
+ */
+
 // Parameterklassen:
-#define P_ALLE       0
+#define P_ALL        0
 #define P_ERRORS     1
-#define P_ALLGEMEIN  2
+#define P_ALLGEMEIN  2 
 #define P_KESSEL     3
 #define P_WARMWASSER 4
-#define P_HEIZKREIS  5
-#define P_BRENNER    6
+#define P_HEATING_CIRCUIT  5
+#define P_BURNER     6
 #define P_HYDRAULIK  7
+
+#define FROMBCD(x)      (((x) >> 4) * 10 + ((x) & 0xf))
+#define TOBCD(x)        (((x) / 10 * 16) + ((x) % 10))
 
 // Prototypen:
 const char * const get_v( const char *name );

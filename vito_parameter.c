@@ -13,8 +13,18 @@
 #include "vito_io.h"
 #include "fehlerliste.h"
 
-#define CACHE_TIME 6
+#define CACHE_TIME 4
 
+
+/*
+ * translation hints
+ * 
+ * HEIZKREIS  -> HEATING_CIRCUIT
+ * BRENNER    -> BURNER
+ * WARMWASSER -> HOT_WATER
+ * ALLGEMEIN  -> GENERAL
+ *  
+ */
 // Das prologue() Makro wird verwendet, um den Anfang der
 // Parameterfunktionen zu bauen:
 #define prologue() \
@@ -55,6 +65,44 @@ const char * const read_deviceid( void )
 }
 
 /* -------------------------------- */
+const char * const read_systemtime( void )
+{
+  static char cache[16];
+  prologue()
+    if ( vito_read( 0x088e, 8, vitomem ) < 0 )
+      return "NULL";
+  sprintf( cache, "%02X%02X%02X%02X%02X%02X%02X%02X", vitomem[0], vitomem[1], vitomem[2], vitomem[3], vitomem[4], vitomem[5], vitomem[6], vitomem[7] );
+  epilogue()
+}
+
+/* -------------------------------- */
+const char * const write_systemtime( const char * value_str )
+{
+    uint8_t vito_date[8];
+    time_t tt;
+    struct tm* t;
+
+    time(&tt);
+    t = localtime(&tt);
+    vito_date[0] = TOBCD((t->tm_year + 1900) / 100);
+    vito_date[1] = TOBCD(t->tm_year - 100 ); // according to the range settable on the Vitodens LCD frontpanel
+    vito_date[2] = TOBCD(t->tm_mon + 1);
+    vito_date[3] = TOBCD(t->tm_mday);
+    vito_date[4] = TOBCD(t->tm_wday);
+    vito_date[5] = TOBCD(t->tm_hour);
+    vito_date[6] = TOBCD(t->tm_min);
+    vito_date[7] = TOBCD(t->tm_sec);
+    if ( vito_write(0x088e, 8, vito_date) < 0)
+    {
+	    return "Vitodens communication Error on setting systemtime";
+    }
+    else
+    {
+	return "OK";
+    }
+}
+
+/* -------------------------------- */
 const char * const read_mode( void )
 {
   static char cache[5];
@@ -91,11 +139,15 @@ const char * const read_mode_text( void )
   if ( strcmp(mode,"NULL") == 0)
     return "NULL";
 
+   //:mode => ['water heating only', 'continuous reduced', 'constant normal', 'heating + hot water', 'heating + hot water', 'Off'],
+   // may be :  0=only Water Heating; 1=Continuous reduced; 2=constant normal; 3=heat+WH; 4=heat + WH ; 5=off
+
   switch ( atoi(mode) )
 	{
-	case 0: return "Abschaltbetrieb";
-	case 1: return "Nur Warmwasser";
-	case 2: return "Heizen und Warmwasser";
+	case 0: return "Off";
+	case 1: return "Hot Water";
+	case 2: return "Heating and hot water";
+	case 5: return "Off";
 	default: return "UNKNOWN";
 	}
 }
@@ -165,6 +217,7 @@ const char * const read_abgas_temp( void )
 }
 
 /* -------------------------------- */
+// boiler_temp
 const char * const read_k_ist_temp( void )
 {
   static char cache[6];
@@ -185,6 +238,7 @@ const char * const read_k_ist_temp_tp( void )
   epilogue()
 }
 
+// boiler_temp_set
 const char * const read_k_soll_temp( void )
 {
   static char cache[6];
@@ -225,6 +279,7 @@ const char * const write_ww_soll_temp( const char *value_str )
 }
 
 /* -------------------------------- */
+// target Boiler Offset
 const char * const read_ww_offset( void)
 {
   static char cache[6];
@@ -236,6 +291,7 @@ const char * const read_ww_offset( void)
 }
 
 /* -------------------------------- */
+// hot_water_temp_lp
 const char * const read_ww_ist_temp_tp( void )
 {
   static char cache[6];
@@ -247,6 +303,7 @@ const char * const read_ww_ist_temp_tp( void )
 }
 
 /* -------------------------------- */
+// hot_water_temp
 const char * const read_ww_ist_temp( void )
 {
   static char cache[6];
@@ -292,7 +349,18 @@ const char * const read_outdoor_temp( void )
   epilogue()
 }
 
-/////////////////// BRENNER
+/* -------------------------------- */
+const char * const read_indoor_temp( void )
+{
+  static char cache[6];
+  prologue()
+    if ( vito_read( 0x0896, 2, vitomem) < 0 )
+      return "NULL";
+  sprintf( cache, "%3.2f", ((int16_t)( vitomem[0] + (vitomem[1] << 8))) / 10.0 );
+  epilogue()
+}
+
+/////////////////// BURNER
 /* -------------------------------- */
 const char * const read_starts(void )
 {
@@ -354,6 +422,7 @@ const char * const read_power( void )
 
 /////////////////// HYDRAULIK
 /* -------------------------------- */
+// valve position
 const char * const read_ventil( void )
 {
   static char cache[5];
@@ -366,6 +435,7 @@ const char * const read_ventil( void )
 }
 
 /* -------------------------------- */
+// switching_valve
 const char * const read_ventil_text( void )
 {
   const char *result;
@@ -375,12 +445,13 @@ const char * const read_ventil_text( void )
   if ( strcmp( result, "NULL" ) == 0 )
     return "NULL";
   
+ 
   switch (atoi(result))
     {
-    case 0: return "undefiniert";
-    case 1: return "Heizkreis";
-    case 2: return "Mittelstellung";
-    case 3: return "Warmwasserbereitung";
+    case 0: return "undefined";
+    case 1: return "heating";
+    case 2: return "middle position";
+    case 3: return "hot water";
     default: return "UNKNOWN";
     }
 }
@@ -409,8 +480,9 @@ const char * const read_flow( void )
   epilogue()
 }
     
-/////////////////// HEIZKREIS
+/////////////////// HEATING_CIRCUIT
 /* -------------------------------- */
+// circuit_flow_temp
 const char * const read_vl_soll_temp( void )
 {
   static char cache[6];
@@ -422,6 +494,7 @@ const char * const read_vl_soll_temp( void )
 }
 
 /* -------------------------------- */
+// norm_room_temp
 const char * const read_raum_soll_temp( void )
 {
   static char cache[6];
@@ -451,6 +524,7 @@ const char * const write_raum_soll_temp( const char *value_str )
 }
 
 /* -------------------------------- */
+// reduce_room_temp
 const char * const read_red_raum_soll_temp( void )
 {
   static char cache[6];
@@ -480,6 +554,7 @@ const char * const write_red_raum_soll_temp( const char *value_str )
 }
 
 /* -------------------------------- */
+/* curve_slope */
 const char * const read_neigung( void )
 {
   static char cache[6];
@@ -491,6 +566,7 @@ const char * const read_neigung( void )
 }
 
 /* -------------------------------- */
+/* curve_level */
 const char * const read_niveau( void )
 {
   static char cache[5];
@@ -564,35 +640,37 @@ const char * const write_pp_min( const char *value_str )
 const struct s_parameter parameter_liste[] = {
   { "errors", "Error History (numerisch)", "", P_ERRORS, &read_errors, NULL },
   { "errors_text", "Error History (text)", "", P_ERRORS, &read_errors_text, NULL },
-  { "deviceid", "Geraeteidentifikation", "", P_ALLGEMEIN, &read_deviceid, NULL },
-  { "mode", "Betriebsmodus (numerisch)", "", P_ALLGEMEIN, &read_mode, &write_mode },
-  { "mode_text", "Betriebsmodus (text)", "", P_ALLGEMEIN, &read_mode_text, NULL },
-  { "outdoor_temp", "Aussentemperatur", "oC", P_ALLGEMEIN, &read_outdoor_temp, NULL },
-  { "outdoor_temp_tp", "Aussentemperatur Tiefpass", "oC", P_ALLGEMEIN, &read_outdoor_temp_tp, NULL },
-  { "outdoor_temp_smooth", "Aussentemperatur Gedaempft", "oC", P_ALLGEMEIN, &read_outdoor_temp_smooth, NULL },
-  { "k_ist_temp", "Kessel Ist Temperatur", "oC", P_KESSEL, &read_k_ist_temp, NULL },
-  { "k_ist_temp_tp", "Kessel Ist T. nach Tiefpass", "oC", P_KESSEL, &read_k_ist_temp_tp, NULL },
-  { "k_soll_temp", "Kessel Soll Temperatur", "oC", P_KESSEL, &read_k_soll_temp, NULL },
-  { "k_abgas_temp", "Kessel Abgastemperatur", "oC", P_KESSEL, &read_abgas_temp, NULL },
-  { "ww_soll_temp", "Warmwasser Soll Temperatur", "oC", P_WARMWASSER, &read_ww_soll_temp, &write_ww_soll_temp },
-  { "ww_ist_temp", "Warmwasser Ist Temperatur", "oC", P_WARMWASSER, &read_ww_ist_temp, NULL },
-  { "ww_ist_temp_tp", "Warmwasser Ist Temp. Tiefpass", "oC", P_WARMWASSER, &read_ww_ist_temp_tp, NULL },
-  { "ww_offset", "Offset Kessel/WW Soll", "K", P_WARMWASSER, &read_ww_offset, NULL },
-  { "vl_soll_temp", "Vorlauf Solltemperatur", "oC", P_HEIZKREIS, &read_vl_soll_temp, NULL },
-  { "raum_soll_temp", "Raum Solltemperatur", "oC", P_HEIZKREIS, &read_raum_soll_temp, &write_raum_soll_temp },
-  { "red_raum_soll_temp", "Reduzierte Raum Solltemperatur", "oC", P_HEIZKREIS, &read_red_raum_soll_temp, &write_red_raum_soll_temp },
-  { "niveau", "Heizkurve Niveau", "K", P_HEIZKREIS, &read_niveau, NULL },
-  { "neigung", "Heizkurve Neigung", "", P_HEIZKREIS, &read_neigung, NULL },
-  { "pp_max", "Pumpenleistung Maximal", "%", P_HEIZKREIS, &read_pp_max, &write_pp_max },
-  { "pp_min", "Pumpenleistung Minimal", "%", P_HEIZKREIS, &read_pp_min, &write_pp_min },
-  { "starts", "Brennerstarts", "", P_BRENNER, &read_starts, NULL },
-  { "runtime_h", "Brennerlaufzeit", "h", P_BRENNER, &read_runtime_h, NULL },
-  { "runtime", "Brennerlaufzeit", "s", P_BRENNER, &read_runtime, NULL },
-  { "power", "Brennerleistung", "%", P_BRENNER, &read_power, NULL },
-  { "ventil", "Ventilstellung", "", P_HYDRAULIK, &read_ventil, NULL },
-  { "ventil_text", "Ventilstellung", "", P_HYDRAULIK, &read_ventil_text, NULL },
-  { "pump_power", "Pumpenleistung", "%", P_HYDRAULIK, &read_pump_power, NULL },
-  { "flow", "Volumenstrom", "l/h", P_HYDRAULIK, &read_flow, NULL },
+  { "deviceid", "Device ID", "", P_ALLGEMEIN, &read_deviceid, NULL },
+  { "system_time", "System time", "", P_ALLGEMEIN, &read_systemtime, &write_systemtime },
+  { "mode", "operating mode (numerisch)", "", P_ALLGEMEIN, &read_mode, &write_mode },
+  { "mode_text", "operating mode (text)", "", P_ALLGEMEIN, &read_mode_text, NULL },
+  { "indoor_temp", "Indoor temperature", "°C", P_ALLGEMEIN, &read_indoor_temp, NULL },
+  { "outdoor_temp", "Outdoor temperature", "°C", P_ALLGEMEIN, &read_outdoor_temp, NULL },
+  { "outdoor_temp_lp", "Outdoor temp / low_pass", "°C", P_ALLGEMEIN, &read_outdoor_temp_tp, NULL },
+  { "outdoor_temp_smooth", "Outdoor temp / smooth", "°C", P_ALLGEMEIN, &read_outdoor_temp_smooth, NULL },
+  { "boiler_temp", "Boiler temperature", "°C", P_KESSEL, &read_k_ist_temp, NULL },
+  { "boiler_temp_lp", "Boiler temp _ low pass", "°C", P_KESSEL, &read_k_ist_temp_tp, NULL },
+  { "set_boiler_temp", "Boiler setpoint temperature", "°C", P_KESSEL, &read_k_soll_temp, NULL },
+  { "boiler_gaz_temp", "Boiler flue gas temperature", "°C", P_KESSEL, &read_abgas_temp, NULL },
+  { "hot_water_set", "Hot water setting", "°C", P_WARMWASSER, &read_ww_soll_temp, &write_ww_soll_temp },
+  { "hot_water_temp", "Hot water temperature", "°C", P_WARMWASSER, &read_ww_ist_temp, NULL },
+  { "hot_water_temp_lp", "Hot water temperature low_pass", "°C", P_WARMWASSER, &read_ww_ist_temp_tp, NULL },
+  { "boiler_offet", "boiler Offset", "K", P_WARMWASSER, &read_ww_offset, NULL },
+  { "flow_temp_set", "flow temp setting", "°C", P_HEATING_CIRCUIT, &read_vl_soll_temp, NULL },
+  { "norm_room_temp", "room temp setting", "°C", P_HEATING_CIRCUIT, &read_raum_soll_temp, &write_raum_soll_temp },
+  { "red_room_temp", "reduced room temp setting", "°C", P_HEATING_CIRCUIT, &read_red_raum_soll_temp, &write_red_raum_soll_temp },
+  { "curve_level", "Curve level", "K", P_HEATING_CIRCUIT, &read_niveau, NULL },
+  { "curve_slope", "Curve  slope", "", P_HEATING_CIRCUIT, &read_neigung, NULL },
+  { "pp_max", "Maximal pomp power", "%", P_HEATING_CIRCUIT, &read_pp_max, &write_pp_max },
+  { "pp_min", "Minimal pomp power", "%", P_HEATING_CIRCUIT, &read_pp_min, &write_pp_min },
+  { "starts", "Heater Starts", "", P_BURNER, &read_starts, NULL },
+  { "runtime_h", "Runtime in hours", "h", P_BURNER, &read_runtime_h, NULL },
+  { "runtime", "Runtime in seconds", "s", P_BURNER, &read_runtime, NULL },
+  { "power", "Power in %", "%", P_BURNER, &read_power, NULL },
+  { "valve_setting", "valve setting", "", P_HYDRAULIK, &read_ventil, NULL },
+  { "valve_setting_text", "valve setting / text", "", P_HYDRAULIK, &read_ventil_text, NULL },
+  { "pump_power", "Pump power", "%", P_HYDRAULIK, &read_pump_power, NULL },
+/*  { "flow", "Volumenstrom", "l/h", P_HYDRAULIK, &read_flow, NULL }, */
   { NULL, NULL, NULL, 0, NULL, NULL }
 };
 
