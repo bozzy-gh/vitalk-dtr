@@ -32,6 +32,8 @@ const char *commands[] =
    "gc",                // 7
    "gvu",               // 8
    "frame_debug",       // 9
+   "rg",				//10 - MQU - from https://www.bricozone.fr/t/interface-vitodens-200-avec-raspberry-pi.14671/
+   "rs",				//11 - MQU - from https://www.bricozone.fr/t/interface-vitodens-200-avec-raspberry-pi.14671/
    "\0"
 };
 
@@ -46,6 +48,8 @@ static void print_help( int fd )
 	  "  g, get <p_name>         - Query Parameter\n"
 	  "  gvu <p_name>            - Get Value of Parameter with Unit\n"
 	  "  s, set <p_name> <value> - Set Parameter\n"
+	  "  rg <addr> <len>         - Raw Get Parameter ; len limited to 8 bytes\n"
+	  "  rs <addr> <value>       - Raw Set Parameter by adress (one byte at the time\n"
 	  "  gc <class>              - Query a class of Parameters\n"
 	  "     Parameterklassen:\n"
 	  "       P_ALLE       0\n"
@@ -221,19 +225,24 @@ void telnet_task( void )
 				break;
 			      case 2:
 			      case 3:
+			    // get value by name
 				dprintf( i, "%s\n", get_v(value1) );
 				break;
 			      case 4:
 			      case 5:
+			    // set value by name
 				dprintf( i, "%s\n", set_v(value1, value2) );
 				break;
 			      case 6:
+			    // list all variables names
 				print_listall( i, atoi(value1) );
 				break;
 			      case 7:
+			    // list all class names
 				get_class( i, atoi(value1) );
 				break;
 			      case 8:
+			    // gvu : get value with unit
 				dprintf( i, "%s %s\n", get_v(value1), get_u(value1) );
 				break;
 			      case 9:
@@ -242,6 +251,13 @@ void telnet_task( void )
 				else
 				  frame_debug = 0;
 				break;
+				  // MQU - https://www.bricozone.fr/t/interface-vitodens-200-avec-raspberry-pi.14671/ ; http://www.edom-plc.pl/images/Vitodens/viTalk.zip
+				  // raw read address, len
+			      case 10:
+				dprintf( i, "%s\n$", get_r(value1, value2));	
+				break;
+			      case 11:
+				dprintf( i, "%s\n$", set_r(value1, value2));
 			      }
 			}
 		    }

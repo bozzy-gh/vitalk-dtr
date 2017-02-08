@@ -13,7 +13,7 @@
 #include "vito_io.h"
 #include "fehlerliste.h"
 
-#define CACHE_TIME 4
+#define CACHE_TIME 2
 
 
 /*
@@ -798,3 +798,71 @@ const char * const set_v( const char *name, const char *value )
   return "Unknown Parameter!";
 }
 
+// MQU - from : https://www.bricozone.fr/t/interface-vitodens-200-avec-raspberry-pi.14671/ ; http://www.edom-plc.pl/images/Vitodens/viTalk.zip
+// Raw address reading
+const char * const get_r( const char *address, const char *len ) {
+	static char cache[255];
+
+	int length = strlen(len) == 0 ? 1 : atoi(len);
+	int addr;
+	int i;
+	addr = strtol ( address, NULL, 16);
+
+	uint8_t vitomem[30]; \
+
+      	if ( vito_read( addr, length, vitomem ) < 0 )
+      		return "NULL";
+	cache[0]='\0';
+	for (i = 0; i < length; i++) {
+        	char tmp[10];
+        	sprintf( tmp, "%u;",  vitomem[i] );
+        	strcat(cache, tmp);
+    	}
+	return cache;
+}
+
+// MQU - from : https://www.bricozone.fr/t/interface-vitodens-200-avec-raspberry-pi.14671/ ; http://www.edom-plc.pl/images/Vitodens/viTalk.zip
+// Raw address setting
+const char * const set_r( const char *address, const char *value ) {
+	uint8_t content[8];
+	int addressToSend;
+	char *values;
+	char *array[8];
+	int i=0;
+	int j;
+
+	//check if address is correct
+	addressToSend = strtol (address, NULL, 16);
+	if (addressToSend<=0||addressToSend>65535)
+		return "Wrong address!";
+
+	//split values into an array of strings
+	values = strdup(value);
+	array[i] = strtok(values,";");
+	while(array[i]!=NULL) {
+		array[++i] = strtok(NULL,";");
+	}
+
+
+	//check if there is a value to send
+	if (i==0)
+		return "No value to be sent";
+
+	//limit the size if necessary
+	if (i>8) {
+		i=8;
+	}
+
+	//convert strings to int
+	for (j=0; j<i; j++) 
+		content[j]=atoi(array[j]);
+
+	free(values);
+
+	//send and pray!
+	if ( vito_write(addressToSend, i, content) < 0 )
+		return "Vitodens communication Error";
+	else
+		return "OK";
+
+}

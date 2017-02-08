@@ -36,3 +36,6 @@ const char * const get_v( const char *name );
 const char * const get_u( const char *name );
 const char * const set_v( const char *name, const char *value );
 
+// MQU - raw mode get and set functions
+const char * const get_r( const char *address, const char *len );
+const char * const set_r( const char *address, const char *value ); // FIXME : may be len is missing ?
