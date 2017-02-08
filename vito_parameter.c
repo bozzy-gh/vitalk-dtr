@@ -101,13 +101,40 @@ const char * const write_systemtime( const char * value_str )
 	return "OK";
     }
 }
-
-/* -------------------------------- */
+/*   modes : https://gist.github.com/mqu/9519e39ccc474f111ffb#file-rvitalk-rb-L662
+ *  - for 0x20CB device : 
+ *  - mode : 0x2323
+ *  - eco mode :  0x2302
+ *  - party mode : 0x2303
+ */
+/* MQU -------------------------------- */
 const char * const read_mode( void )
 {
   static char cache[5];
   prologue()
     if ( vito_read( 0x2323, 1, vitomem ) < 0 )
+      return "NULL";
+  sprintf( cache, "%u", vitomem[0] );
+  epilogue()
+}
+
+/* MQU -------------------------------- */
+const char * const read_eco_mode( void )
+{
+  static char cache[5];
+  prologue()
+    if ( vito_read( 0x2302, 1, vitomem ) < 0 )
+      return "NULL";
+  sprintf( cache, "%u", vitomem[0] );
+  epilogue()
+}
+
+/* MQU -------------------------------- */
+const char * const read_party_mode( void )
+{
+  static char cache[5];
+  prologue()
+    if ( vito_read( 0x2303, 1, vitomem ) < 0 )
       return "NULL";
   sprintf( cache, "%u", vitomem[0] );
   epilogue()
@@ -126,6 +153,42 @@ const char * const write_mode( const char * value_str )
 
   content[0] = mode & 0xff; // unnoetig, aber deutlicher
   if ( vito_write(0x2323, 1, content) < 0 )
+    return "Vitodens communication Error";
+  else
+    return "OK";
+}
+
+/* MQU -------------------------------- */
+const char * const write_eco_mode( const char * value_str )
+{
+  uint8_t content[3];
+  int mode;
+  
+  mode = atoi( value_str );
+  // Dauernd reduziert und dauernd normal unterstuetzt meine Vitodens offenbar nicht:
+  if ( mode < 0 || mode > 1 )
+    return "Illegal Mode!";
+
+  content[0] = mode & 0xff; // unnoetig, aber deutlicher
+  if ( vito_write(0x2302, 1, content) < 0 )
+    return "Vitodens communication Error";
+  else
+    return "OK";
+}
+
+/* MQU -------------------------------- */
+const char * const write_party_mode( const char * value_str )
+{
+  uint8_t content[3];
+  int mode;
+  
+  mode = atoi( value_str );
+  // Dauernd reduziert und dauernd normal unterstuetzt meine Vitodens offenbar nicht:
+  if ( mode < 0 || mode > 1 )
+    return "Illegal Mode!";
+
+  content[0] = mode & 0xff; // unnoetig, aber deutlicher
+  if ( vito_write(0x2303, 1, content) < 0 )
     return "Vitodens communication Error";
   else
     return "OK";
@@ -637,12 +700,15 @@ const char * const write_pp_min( const char *value_str )
 
 //////////////////////////////////////////////////////////////////////////
 // obacht: maximale Befehlslaenge 20 Zeichen, sonst klemmt der telnet-parser
+// know to work for deviceid: 0x20cb
 const struct s_parameter parameter_liste[] = {
   { "errors", "Error History (numerisch)", "", P_ERRORS, &read_errors, NULL },
   { "errors_text", "Error History (text)", "", P_ERRORS, &read_errors_text, NULL },
   { "deviceid", "Device ID", "", P_ALLGEMEIN, &read_deviceid, NULL },
   { "system_time", "System time", "", P_ALLGEMEIN, &read_systemtime, &write_systemtime },
   { "mode", "operating mode (numerisch)", "", P_ALLGEMEIN, &read_mode, &write_mode },
+  { "eco_mode", "Econimic Mode", "", P_ALLGEMEIN, &read_eco_mode, &write_eco_mode },
+  { "party_mode", "Party mode", "", P_ALLGEMEIN, &read_party_mode, &write_party_mode },
   { "mode_text", "operating mode (text)", "", P_ALLGEMEIN, &read_mode_text, NULL },
   { "indoor_temp", "Indoor temperature", "°C", P_ALLGEMEIN, &read_indoor_temp, NULL },
   { "outdoor_temp", "Outdoor temperature", "°C", P_ALLGEMEIN, &read_outdoor_temp, NULL },
