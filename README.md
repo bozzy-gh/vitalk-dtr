@@ -12,3 +12,4 @@ link :
 * https://gist.github.com/mqu/9519e39ccc474f111ffb : 
   * my first ruby script with P300 protocol implementation : there is some bugs and is not really usable ; 
   * this repository describe P300 protocols
+* wireless link with ESP8266 : https://github.com/rene-mt/vitotronic-interface-8266
