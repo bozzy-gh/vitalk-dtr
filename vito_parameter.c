@@ -103,9 +103,9 @@ const char * const write_systemtime( const char * value_str )
 }
 /*   modes : https://gist.github.com/mqu/9519e39ccc474f111ffb#file-rvitalk-rb-L662
  *  - for 0x20CB device : 
- *  - mode : 0x2323
- *  - eco mode :  0x2302
- *  - party mode : 0x2303
+ *  - mode       : 0x2323
+ *  - eco mode   : 0x2302 -> 0x2331   ; see https://github.com/mqu/vitalk/issues/1
+ *  - party mode : 0x2303 -> 0x2330
  */
 /* MQU -------------------------------- */
 const char * const read_mode( void )
@@ -123,7 +123,7 @@ const char * const read_eco_mode( void )
 {
   static char cache[5];
   prologue()
-    if ( vito_read( 0x2302, 1, vitomem ) < 0 )
+    if ( vito_read( 0x2331, 1, vitomem ) < 0 )
       return "NULL";
   sprintf( cache, "%u", vitomem[0] );
   epilogue()
@@ -134,7 +134,7 @@ const char * const read_party_mode( void )
 {
   static char cache[5];
   prologue()
-    if ( vito_read( 0x2303, 1, vitomem ) < 0 )
+    if ( vito_read( 0x2330, 1, vitomem ) < 0 )
       return "NULL";
   sprintf( cache, "%u", vitomem[0] );
   epilogue()
@@ -170,7 +170,7 @@ const char * const write_eco_mode( const char * value_str )
     return "Illegal Mode!";
 
   content[0] = mode & 0xff; // unnoetig, aber deutlicher
-  if ( vito_write(0x2302, 1, content) < 0 )
+  if ( vito_write(0x2331, 1, content) < 0 )
     return "Vitodens communication Error";
   else
     return "OK";
@@ -188,7 +188,7 @@ const char * const write_party_mode( const char * value_str )
     return "Illegal Mode!";
 
   content[0] = mode & 0xff; // unnoetig, aber deutlicher
-  if ( vito_write(0x2303, 1, content) < 0 )
+  if ( vito_write(0x2330, 1, content) < 0 )
     return "Vitodens communication Error";
   else
     return "OK";
