@@ -18,13 +18,14 @@
 
 /*
  * translation hints
- * 
+ *
  * HEIZKREIS  -> HEATING_CIRCUIT
  * BRENNER    -> BURNER
  * WARMWASSER -> HOT_WATER
  * ALLGEMEIN  -> GENERAL
- *  
+ *
  */
+
 // Das prologue() Makro wird verwendet, um den Anfang der
 // Parameterfunktionen zu bauen:
 #define prologue() \
@@ -94,15 +95,15 @@ const char * const write_systemtime( const char * value_str )
     vito_date[7] = TOBCD(t->tm_sec);
     if ( vito_write(0x088e, 8, vito_date) < 0)
     {
-	    return "Vitodens communication Error on setting systemtime";
+        return "Vitodens communication Error on setting systemtime";
     }
     else
     {
-	return "OK";
+    return "OK";
     }
 }
 /*   modes : https://gist.github.com/mqu/9519e39ccc474f111ffb#file-rvitalk-rb-L662
- *  - for 0x20CB device : 
+ *  - for 0x20CB device :
  *  - mode       : 0x2323
  *  - eco mode   : 0x2302 -> 0x2331   ; see https://github.com/mqu/vitalk/issues/1
  *  - party mode : 0x2303 -> 0x2330
@@ -145,7 +146,7 @@ const char * const write_mode( const char * value_str )
 {
   uint8_t content[3];
   int mode;
-  
+
   mode = atoi( value_str );
   // Dauernd reduziert und dauernd normal unterstuetzt meine Vitodens offenbar nicht:
   if ( mode < 0 || mode > 2 )
@@ -163,7 +164,7 @@ const char * const write_eco_mode( const char * value_str )
 {
   uint8_t content[3];
   int mode;
-  
+
   mode = atoi( value_str );
   // Dauernd reduziert und dauernd normal unterstuetzt meine Vitodens offenbar nicht:
   if ( mode < 0 || mode > 1 )
@@ -181,7 +182,7 @@ const char * const write_party_mode( const char * value_str )
 {
   uint8_t content[3];
   int mode;
-  
+
   mode = atoi( value_str );
   // Dauernd reduziert und dauernd normal unterstuetzt meine Vitodens offenbar nicht:
   if ( mode < 0 || mode > 1 )
@@ -198,7 +199,7 @@ const char * const write_party_mode( const char * value_str )
 const char * const read_mode_text( void )
 {
   const char * const mode = read_mode();
-  
+
   if ( strcmp(mode,"NULL") == 0)
     return "NULL";
 
@@ -206,13 +207,13 @@ const char * const read_mode_text( void )
    // may be :  0=only Water Heating; 1=Continuous reduced; 2=constant normal; 3=heat+WH; 4=heat + WH ; 5=off
 
   switch ( atoi(mode) )
-	{
-	case 0: return "Off";
-	case 1: return "Hot Water";
-	case 2: return "Heating and hot water";
-	case 5: return "Off";
-	default: return "UNKNOWN";
-	}
+    {
+    case 0: return "Off";
+    case 1: return "Hot Water";
+    case 2: return "Heating and hot water";
+    case 5: return "Off";
+    default: return "UNKNOWN";
+    }
 }
 
 /* -------------------------------- */
@@ -224,15 +225,15 @@ const char * const read_errors( void )
 {
   static char cache[50];
   prologue()
-    
+
   int i;
-  
+
   // Die 10 Fehlermeldungen einlesen:
   for ( i=0; i <= 9; i++)
     {
       if ( vito_read( 0x7507 + (i*0x0009), 1, vitomem ) < 0 )
-	return "NULL";
-      
+    return "NULL";
+
       sprintf( cache + (4*i), "%03u,", vitomem[0] );
     }
   cache[39]='\0'; //letztes Komma ueberschreiben
@@ -249,7 +250,7 @@ const char * const read_errors_text( void )
   const char * errors;
   int n_error;
   int i;
-  
+
   errors = read_errors();
   if ( strcmp( errors, "NULL" ) == 0 )
     return "NULL";
@@ -267,7 +268,7 @@ const char * const read_errors_text( void )
 }
 
 
-//////////////////// KESSEL
+//////////////////// BOILER
 /* -------------------------------- */
 const char * const read_abgas_temp( void )
 {
@@ -312,7 +313,7 @@ const char * const read_k_soll_temp( void )
   epilogue()
 }
 
-//////////////////// WARMWASSER
+//////////////////// HOT WATER
 /* -------------------------------- */
 const char * const read_ww_soll_temp( void)
 {
@@ -329,7 +330,7 @@ const char * const write_ww_soll_temp( const char *value_str )
 {
   uint8_t content[3];
   int temp;
-  
+
   temp = atoi( value_str );
   if ( temp < 5 || temp > 60 )
     return "WW_soll_temp: range exceeded!";
@@ -378,7 +379,7 @@ const char * const read_ww_ist_temp( void )
 }
 
 
-/////////////////// AUSSENTEMPERATUR
+/////////////////// OUTDOOR TEMPERATURE
 /* -------------------------------- */
 const char * const read_outdoor_temp_tp( void )
 {
@@ -431,9 +432,9 @@ const char * const read_starts(void )
   prologue()
     if ( vito_read( 0x088A, 4, vitomem) < 0 )
       return "NULL";
-  
+
   unsigned int value;
-  
+
   value = vitomem[0] + (vitomem[1] << 8) + (vitomem[2] << 16) + (vitomem[3] << 24);
       sprintf( cache, "%u", value );
 
@@ -447,9 +448,9 @@ const char * const read_runtime( void )
   prologue()
     if ( vito_read( 0x0886, 4, vitomem) < 0 )
       return "NULL";
-  
+
   unsigned int value;
-  
+
   value = vitomem[0] + (vitomem[1] << 8) + (vitomem[2] << 16) + (vitomem[3] << 24);
       sprintf( cache, "%u", value );
 
@@ -463,7 +464,7 @@ const char * const read_runtime_h( void )
   const char *result;
 
   result = read_runtime();
-  
+
   if ( strcmp( result, "NULL" ) == 0 )
     return "NULL";
 
@@ -478,12 +479,12 @@ const char * const read_power( void )
   prologue()
     if ( vito_read( 0xa38f, 1, vitomem) < 0 )
       return "NULL";
-  
+
   sprintf( cache, "%3.1f", vitomem[0] / 2.0 );
   epilogue()
 }
 
-/////////////////// HYDRAULIK
+/////////////////// HYDRAULICS
 /* -------------------------------- */
 // valve position
 const char * const read_ventil( void )
@@ -492,7 +493,7 @@ const char * const read_ventil( void )
   prologue()
     if ( vito_read( 0x0a10, 1, vitomem) < 0 )
       return "NULL";
-  
+
   sprintf( cache, "%u", vitomem[0] );
   epilogue()
 }
@@ -502,13 +503,12 @@ const char * const read_ventil( void )
 const char * const read_ventil_text( void )
 {
   const char *result;
-  
+
   result = read_ventil();
-  
+
   if ( strcmp( result, "NULL" ) == 0 )
     return "NULL";
-  
- 
+
   switch (atoi(result))
     {
     case 0: return "undefined";
@@ -538,12 +538,12 @@ const char * const read_flow( void )
   prologue()
      if ( vito_read( 0x0c24, 2, vitomem) < 0 )
       return "NULL";
-  
+
   sprintf( cache, "%u", (vitomem[0] + (vitomem[1] << 8)) );
   epilogue()
 }
-    
-/////////////////// HEATING_CIRCUIT
+
+/////////////////// HEATING CIRCUIT
 /* -------------------------------- */
 // circuit_flow_temp
 const char * const read_vl_soll_temp( void )
@@ -573,12 +573,12 @@ const char * const write_raum_soll_temp( const char *value_str )
 {
   uint8_t content[3];
   int temp;
-  
+
   temp = atoi( value_str );
-  
+
   if ( temp < 10 || temp > 30 )
     return "Raum_soll_temp: range exceeded!";
-  
+
   content[0] = temp & 0xff; // unnoetig, aber deutlicher
   if ( vito_write(0x2306, 1, content) < 0 )
     return "Vitodens communication Error";
@@ -603,12 +603,12 @@ const char * const write_red_raum_soll_temp( const char *value_str )
 {
   uint8_t content[3];
   int temp;
-  
+
   temp = atoi( value_str );
-  
+
   if ( temp < 10 || temp > 30 )
     return "Raum_soll_temp: range exceeded!";
-  
+
   content[0] = temp & 0xff; // unnoetig, aber deutlicher
   if ( vito_write(0x2307, 1, content) < 0 )
     return "Vitodens communication Error";
@@ -656,12 +656,12 @@ const char * const write_pp_max( const char *value_str )
 {
   uint8_t content[3];
   int temp;
-  
+
   temp = atoi( value_str );
-  
+
   if ( temp < 0 || temp > 100 )
     return "Max. Pumpenleistung: range exceeded!";
-  
+
   content[0] = temp & 0xff; // unnoetig, aber deutlicher
   if ( vito_write(0x27e6, 1, content) < 0 )
     return "Vitodens communication Error";
@@ -685,12 +685,12 @@ const char * const write_pp_min( const char *value_str )
 {
   uint8_t content[3];
   int temp;
-  
+
   temp = atoi( value_str );
-  
+
   if ( temp < 0 || temp > 100 )
     return "Min. Pumpenleistung: range exceeded!";
-  
+
   content[0] = temp & 0xff; // unnoetig, aber deutlicher
   if ( vito_write(0x27e7, 1, content) < 0 )
     return "Vitodens communication Error";
@@ -704,39 +704,39 @@ const char * const write_pp_min( const char *value_str )
 const struct s_parameter parameter_liste[] = {
   { "errors", "Error History (numerisch)", "", P_ERRORS, &read_errors, NULL },
   { "errors_text", "Error History (text)", "", P_ERRORS, &read_errors_text, NULL },
-  { "deviceid", "Device ID", "", P_ALLGEMEIN, &read_deviceid, NULL },
-  { "system_time", "System time", "", P_ALLGEMEIN, &read_systemtime, &write_systemtime },
-  { "mode", "operating mode (numerisch)", "", P_ALLGEMEIN, &read_mode, &write_mode },
-  { "eco_mode", "Econimic Mode", "", P_ALLGEMEIN, &read_eco_mode, &write_eco_mode },
-  { "party_mode", "Party mode", "", P_ALLGEMEIN, &read_party_mode, &write_party_mode },
-  { "mode_text", "operating mode (text)", "", P_ALLGEMEIN, &read_mode_text, NULL },
-  { "indoor_temp", "Indoor temperature", "째C", P_ALLGEMEIN, &read_indoor_temp, NULL },
-  { "outdoor_temp", "Outdoor temperature", "째C", P_ALLGEMEIN, &read_outdoor_temp, NULL },
-  { "outdoor_temp_lp", "Outdoor temp / low_pass", "째C", P_ALLGEMEIN, &read_outdoor_temp_tp, NULL },
-  { "outdoor_temp_smooth", "Outdoor temp / smooth", "째C", P_ALLGEMEIN, &read_outdoor_temp_smooth, NULL },
-  { "boiler_temp", "Boiler temperature", "째C", P_KESSEL, &read_k_ist_temp, NULL },
-  { "boiler_temp_lp", "Boiler temp _ low pass", "째C", P_KESSEL, &read_k_ist_temp_tp, NULL },
-  { "set_boiler_temp", "Boiler setpoint temperature", "째C", P_KESSEL, &read_k_soll_temp, NULL },
-  { "boiler_gaz_temp", "Boiler flue gas temperature", "째C", P_KESSEL, &read_abgas_temp, NULL },
-  { "hot_water_set", "Hot water setting", "째C", P_WARMWASSER, &read_ww_soll_temp, &write_ww_soll_temp },
-  { "hot_water_temp", "Hot water temperature", "째C", P_WARMWASSER, &read_ww_ist_temp, NULL },
-  { "hot_water_temp_lp", "Hot water temperature low_pass", "째C", P_WARMWASSER, &read_ww_ist_temp_tp, NULL },
-  { "boiler_offet", "boiler Offset", "K", P_WARMWASSER, &read_ww_offset, NULL },
-  { "flow_temp_set", "flow temp setting", "째C", P_HEATING_CIRCUIT, &read_vl_soll_temp, NULL },
-  { "norm_room_temp", "room temp setting", "째C", P_HEATING_CIRCUIT, &read_raum_soll_temp, &write_raum_soll_temp },
-  { "red_room_temp", "reduced room temp setting", "째C", P_HEATING_CIRCUIT, &read_red_raum_soll_temp, &write_red_raum_soll_temp },
-  { "curve_level", "Curve level", "K", P_HEATING_CIRCUIT, &read_niveau, NULL },
-  { "curve_slope", "Curve  slope", "", P_HEATING_CIRCUIT, &read_neigung, NULL },
-  { "pp_max", "Maximal pomp power", "%", P_HEATING_CIRCUIT, &read_pp_max, &write_pp_max },
-  { "pp_min", "Minimal pomp power", "%", P_HEATING_CIRCUIT, &read_pp_min, &write_pp_min },
+  { "deviceid", "Device ID", "", P_GENERAL, &read_deviceid, NULL },
+  { "system_time", "System time", "", P_GENERAL, &read_systemtime, &write_systemtime },
+  { "mode", "operating mode (numerisch)", "", P_GENERAL, &read_mode, &write_mode },
+  { "eco_mode", "Econimic Mode", "", P_GENERAL, &read_eco_mode, &write_eco_mode },
+  { "party_mode", "Party mode", "", P_GENERAL, &read_party_mode, &write_party_mode },
+  { "mode_text", "operating mode (text)", "", P_GENERAL, &read_mode_text, NULL },
+  { "indoor_temp", "Indoor temperature", "캜", P_GENERAL, &read_indoor_temp, NULL },
+  { "outdoor_temp", "Outdoor temperature", "캜", P_GENERAL, &read_outdoor_temp, NULL },
+  { "outdoor_temp_lp", "Outdoor temp / low_pass", "캜", P_GENERAL, &read_outdoor_temp_tp, NULL },
+  { "outdoor_temp_smooth", "Outdoor temp / smooth", "캜", P_GENERAL, &read_outdoor_temp_smooth, NULL },
+  { "boiler_temp", "Boiler temperature", "캜", P_BOILER, &read_k_ist_temp, NULL },
+  { "boiler_temp_lp", "Boiler temp _ low pass", "캜", P_BOILER, &read_k_ist_temp_tp, NULL },
+  { "set_boiler_temp", "Boiler setpoint temperature", "캜", P_BOILER, &read_k_soll_temp, NULL },
+  { "boiler_gaz_temp", "Boiler flue gas temperature", "캜", P_BOILER, &read_abgas_temp, NULL },
+  { "hot_water_set", "Hot water setting", "캜", P_HOTWATER, &read_ww_soll_temp, &write_ww_soll_temp },
+  { "hot_water_temp", "Hot water temperature", "캜", P_HOTWATER, &read_ww_ist_temp, NULL },
+  { "hot_water_temp_lp", "Hot water temperature low_pass", "캜", P_HOTWATER, &read_ww_ist_temp_tp, NULL },
+  { "boiler_offet", "boiler Offset", "K", P_HOTWATER, &read_ww_offset, NULL },
+  { "flow_temp_set", "flow temp setting", "캜", P_HEATING, &read_vl_soll_temp, NULL },
+  { "norm_room_temp", "room temp setting", "캜", P_HEATING, &read_raum_soll_temp, &write_raum_soll_temp },
+  { "red_room_temp", "reduced room temp setting", "캜", P_HEATING, &read_red_raum_soll_temp, &write_red_raum_soll_temp },
+  { "curve_level", "Curve level", "K", P_HEATING, &read_niveau, NULL },
+  { "curve_slope", "Curve  slope", "", P_HEATING, &read_neigung, NULL },
+  { "pp_max", "Maximal pomp power", "%", P_HEATING, &read_pp_max, &write_pp_max },
+  { "pp_min", "Minimal pomp power", "%", P_HEATING, &read_pp_min, &write_pp_min },
   { "starts", "Heater Starts", "", P_BURNER, &read_starts, NULL },
   { "runtime_h", "Runtime in hours", "h", P_BURNER, &read_runtime_h, NULL },
   { "runtime", "Runtime in seconds", "s", P_BURNER, &read_runtime, NULL },
   { "power", "Power in %", "%", P_BURNER, &read_power, NULL },
-  { "valve_setting", "valve setting", "", P_HYDRAULIK, &read_ventil, NULL },
-  { "valve_setting_text", "valve setting / text", "", P_HYDRAULIK, &read_ventil_text, NULL },
-  { "pump_power", "Pump power", "%", P_HYDRAULIK, &read_pump_power, NULL },
-/*  { "flow", "Volumenstrom", "l/h", P_HYDRAULIK, &read_flow, NULL }, */
+  { "valve_setting", "valve setting", "", P_HYDRAULIC, &read_ventil, NULL },
+  { "valve_setting_text", "valve setting / text", "", P_HYDRAULIC, &read_ventil_text, NULL },
+  { "pump_power", "Pump power", "%", P_HYDRAULIC, &read_pump_power, NULL },
+/*  { "flow", "Volumenstrom", "l/h", P_HYDRAULIC, &read_flow, NULL }, */
   { NULL, NULL, NULL, 0, NULL, NULL }
 };
 
@@ -746,16 +746,16 @@ const struct s_parameter parameter_liste[] = {
 const char * const get_v( const char *name )
 {
   int i=0;
-  
+
   while( parameter_liste[i].p_name ) // Ende der Liste ?
     {
       if ( strcmp( name, parameter_liste[i].p_name ) == 0 ) // Parametername gefunden?
-	{
-	  if ( parameter_liste[i].f_read ) // Gibts eine Zugriffsfunktion?
-	    return parameter_liste[i].f_read();
-	  else
-	    return "Function not implemented.";
-	}
+    {
+      if ( parameter_liste[i].f_read ) // Gibts eine Zugriffsfunktion?
+        return parameter_liste[i].f_read();
+      else
+        return "Function not implemented.";
+    }
       i++;
     }
 
@@ -766,11 +766,11 @@ const char * const get_v( const char *name )
 const char * const get_u( const char *name )
 {
   int i=0;
-  
+
   while( parameter_liste[i].p_name ) // Ende der Liste
     {
       if ( strcmp( name, parameter_liste[i].p_name ) == 0 ) // Parametername gefunden?
-	return parameter_liste[i].p_einheit;
+    return parameter_liste[i].p_einheit;
 
       i++;
     }
@@ -782,87 +782,95 @@ const char * const get_u( const char *name )
 const char * const set_v( const char *name, const char *value )
 {
   int i=0;
-  
+
   while( parameter_liste[i].p_name ) // Ende der Liste ?
     {
       if ( strcmp( name, parameter_liste[i].p_name ) == 0 ) // Parametername gefunden?
-	{
-	  if ( parameter_liste[i].f_write ) // Gibts eine Schreibfunktion?
-	      return parameter_liste[i].f_write( value );
-	  else
-	    return "Read only!";
-	}
+    {
+      if ( parameter_liste[i].f_write ) // Gibts eine Schreibfunktion?
+          return parameter_liste[i].f_write( value );
+      else
+        return "Read only!";
+    }
       i++;
     }
 
   return "Unknown Parameter!";
 }
 
-// MQU - from : https://www.bricozone.fr/t/interface-vitodens-200-avec-raspberry-pi.14671/ ; http://www.edom-plc.pl/images/Vitodens/viTalk.zip
 // Raw address reading
+
 const char * const get_r( const char *address, const char *len ) {
-	static char cache[255];
+    const int max_length = 64; // max is actually 55
 
-	int length = strlen(len) == 0 ? 1 : atoi(len);
-	int addr;
-	int i;
-	addr = strtol ( address, NULL, 16);
+    static char cache[256];
+    uint8_t vitomem[max_length];
+    int length = strlen(len) == 0 ? 1 : atoi(len);
+    int addr = strtol ( address, NULL, 16);
+    int i;
 
-	uint8_t vitomem[30]; \
+    if ( length > max_length )
+      {
+        fprintf( stderr, "Warning, Max Experimental Size exceeded! Defaulting to %d!\n", max_length );
+        length = max_length;
+      }
 
-      	if ( vito_read( addr, length, vitomem ) < 0 )
-      		return "NULL";
-	cache[0]='\0';
-	for (i = 0; i < length; i++) {
-        	char tmp[10];
-        	sprintf( tmp, "%u;",  vitomem[i] );
-        	strcat(cache, tmp);
-    	}
-	return cache;
+
+    if ( vito_read( addr, length, vitomem ) < 0 )
+      return "NULL";
+
+    cache[0]='\0';
+    for (i = 0; i < length; i++) {
+            char tmp[10];
+            sprintf( tmp, "%u;", vitomem[i] );
+            strcat(cache, tmp);
+        }
+    return cache;
 }
 
-// MQU - from : https://www.bricozone.fr/t/interface-vitodens-200-avec-raspberry-pi.14671/ ; http://www.edom-plc.pl/images/Vitodens/viTalk.zip
-// Raw address setting
+// Raw address writing
+
 const char * const set_r( const char *address, const char *value ) {
-	uint8_t content[8];
-	int addressToSend;
-	char *values;
-	char *array[8];
-	int i=0;
-	int j;
+    uint8_t content[16];
+    int addr = strtol ( address, NULL, 16);
+    char *values;
+    char *array[16];
+    int i=0;
+    int j;
 
-	//check if address is correct
-	addressToSend = strtol (address, NULL, 16);
-	if (addressToSend<=0||addressToSend>65535)
-		return "Wrong address!";
+    //check if address is correct
+    if (addr<=0||addr>0xFFFF)
+        return "Wrong address!";
 
-	//split values into an array of strings
-	values = strdup(value);
-	array[i] = strtok(values,";");
-	while(array[i]!=NULL) {
-		array[++i] = strtok(NULL,";");
-	}
+    //split values into an array of strings
+    values = strdup(value);
+    array[i] = strtok(values,";");
+    while((i<16)&&(array[i]!=NULL)) {
+        i++;
+        if (i<16)
+            array[i] = strtok(NULL,";");
+    }
 
 
-	//check if there is a value to send
-	if (i==0)
-		return "No value to be sent";
+    //check if there is a value to send
+    if (i==0)
+        return "No value to be sent";
 
-	//limit the size if necessary
-	if (i>8) {
-		i=8;
-	}
+    //convert strings to int
+    for (j=0; j<i; j++)
+        content[j]=atoi(array[j]);
 
-	//convert strings to int
-	for (j=0; j<i; j++) 
-		content[j]=atoi(array[j]);
+    free(values);
 
-	free(values);
 
-	//send and pray!
-	if ( vito_write(addressToSend, i, content) < 0 )
-		return "Vitodens communication Error";
-	else
-		return "OK";
+//    example array for fixing internal registers corruption with checksum
+//    uint8_t sistema[10] = { 16, 8, 30, 4, 5, 4, 30, 20, 0, 0 };
+//    if ( vito_write(addr, 10, sistema) < 0 )
+
+    //send and pray!
+    if ( vito_write(addr, i, content) < 0 )
+        return "Vitodens communication Error";
+    else
+        return "OK";
 
 }

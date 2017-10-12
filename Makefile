@@ -1,5 +1,5 @@
 CC?=gcc
-PORT=3083
+PORT=83
 
 all: vitalk
 
@@ -10,6 +10,8 @@ vitalk: vitalk.c vito_io.c vito_io.h vito_parameter.c vito_parameter.h telnet.c 
 	$(CC) -D PORT=$(PORT) -Wall -o vitalk \
 	    vitalk.c vito_io.c vito_parameter.c telnet.c version.c
 
+install: vitalk
+	cp vitalk /usr/local/bin
+
 clean:
 	rm -f vitalk version.c
-

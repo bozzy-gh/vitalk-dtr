@@ -20,4 +20,3 @@ int vito_read( int location, int size, uint8_t *vitomem );
 
 // Schreibt Daten an die Vitodens:
 int vito_write( int location, int size, uint8_t *vitomem );
-

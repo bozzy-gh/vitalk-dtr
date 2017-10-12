@@ -9,4 +9,3 @@ extern short unsigned int vitalkport;
 // Prototypes:
 void telnet_init( void );
 void telnet_task( void );
-

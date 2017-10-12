@@ -1,7 +1,8 @@
 vitalk
 ======
 
-Communication with Vitodens 200 (VScotHO1, 20CB) via Optolink. This is also an english port of this software. This version has been translated in english and also support raw read and get (`rg`, `rs` commands).
+Communication with Vitodens/Vitosolar 200 (VScotHO1, 20CB) via Optolink. This is also an english port of this software.
+This version has been translated in english and also support raw get, raw set and quit (`rg`, `rs`, `q` commands).
 
 This application works for `Ox20CB` (`VScotHO1`) Viessmann device heater based on P300 protocol.
 
