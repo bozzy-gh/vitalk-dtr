@@ -55,8 +55,8 @@ int main(int argc, char **argv)
     switch(c)
       {
       case 'h':
-	printf("viTalk, Viessmann Vitodens Interface\n"
-	       " (c) by KWS, 2013 - Bozzy, 2017\n"
+	printf("viTalk, Viessmann Optolink Interface\n"
+	       " (c) by KWS, 2013\n"
 	       " version %s\n\n"
 	       "Usage: vitalk [option...]\n"
 	       "  -h            give this help list\n"
