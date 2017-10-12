@@ -1,0 +1,13 @@
+[Unit]
+Description=Viessmann Remote Data Server
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/vitalk/vitalk -t /dev/ttyAMA0 -p 83
+RestartSec=5
+TimeoutStartSec=30
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
