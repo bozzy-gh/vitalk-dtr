@@ -16,5 +16,4 @@ It also integrates control for a custom made Differential Temperature Regulator 
   * my first ruby script with P300 protocol implementation : there is some bugs and is not really usable ; 
   * this repository describe P300 protocols
 * wireless link with ESP8266 : https://github.com/rene-mt/vitotronic-interface-8266
-
 * infos about the custom DTR module will be added soon
