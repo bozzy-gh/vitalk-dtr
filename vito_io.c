@@ -355,8 +355,8 @@ int vito_read( int location, int size, uint8_t *vitomem )
   if ( flag > 0 )
     {
       bzero( vitomem, size );
-      if ( ++errorcount >= MAX_ERRORS )
-        exit(2);
+      // if ( ++errorcount >= MAX_ERRORS )
+      //exit(2);
       return -1;
     }
 

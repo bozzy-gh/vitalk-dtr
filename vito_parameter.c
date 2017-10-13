@@ -11,6 +11,7 @@
 
 #include "vito_parameter.h"
 #include "vito_io.h"
+#include "vito_dtr.h"
 #include "fehlerliste.h"
 
 #define CACHE_TIME 2
@@ -816,8 +817,22 @@ const char * const get_r( const char *address, const char *len ) {
       }
 
 
-    if ( vito_read( addr, length, vitomem ) < 0 )
-      return "NULL";
+    if ( addr > 0xFFFF )
+      {
+//        length = 2;
+
+        //check if address is correct
+        if (addr>0x10003)
+            return "NULL";
+
+        if ( vito_dtr_read( addr - 0x10000, length, vitomem ) < 0 )
+            return "NULL";
+      }
+    else
+      {
+        if ( vito_read( addr, length, vitomem ) < 0 )
+            return "NULL";
+      }
 
     cache[0]='\0';
     for (i = 0; i < length; i++) {
@@ -839,7 +854,7 @@ const char * const set_r( const char *address, const char *value ) {
     int j;
 
     //check if address is correct
-    if (addr<=0||addr>0xFFFF)
+    if (addr<=0||addr>0x10003)
         return "Wrong address!";
 
     //split values into an array of strings
@@ -863,14 +878,24 @@ const char * const set_r( const char *address, const char *value ) {
     free(values);
 
 
-//    example array for fixing internal registers corruption with checksum
-//    uint8_t sistema[10] = { 16, 8, 30, 4, 5, 4, 30, 20, 0, 0 };
-//    if ( vito_write(addr, 10, sistema) < 0 )
-
-    //send and pray!
-    if ( vito_write(addr, i, content) < 0 )
-        return "Vitodens communication Error";
+    if ( addr > 0xFFFF )
+      {
+        if ( vito_dtr_write(addr - 0x10000, i, content) < 0 )
+            return "VitoDTR communication Error";
+        else
+            return "OK";
+      }
     else
-        return "OK";
+      {
+//        example array for fixing internal registers corruption with checksum
+//        uint8_t fixdata[10] = { 16, 8, 30, 4, 5, 4, 30, 20, 0, 0 };
+//        if ( vito_write(addr, 10, fixdata) < 0 )
+
+        //send and pray!
+        if ( vito_write(addr, i, content) < 0 )
+            return "Vitodens communication Error";
+        else
+            return "OK";
+      }
 
 }

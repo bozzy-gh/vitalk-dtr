@@ -12,6 +12,7 @@
 #include "telnet.h"
 #include "vito_parameter.h"
 #include "version.h"
+#include "gpio.h"
 
 // This define enables communication with Vitodens:
 #define VITOCOM
@@ -25,6 +26,13 @@ short unsigned int vitalkport = PORT;
 // Signal Handler:
 void exit_handler( int exitcode )
 {
+  /*
+   * Disable GPIO pins
+   */
+  GPIOUnexport(17);
+  GPIOUnexport(27);
+  GPIOUnexport(22);
+
   printf("\n");
   fprintf(stderr, "\nAbort caught!\n" );
 
@@ -55,8 +63,8 @@ int main(int argc, char **argv)
     switch(c)
       {
       case 'h':
-	printf("viTalk, Viessmann Optolink Interface\n"
-	       " (c) by KWS, 2013\n"
+	printf("viTalk-DTR, Viessmann Optolink & DTR Interface\n"
+	       " (c) by KWS, 2013 - Bozzy, 2017\n"
 	       " version %s\n\n"
 	       "Usage: vitalk [option...]\n"
 	       "  -h            give this help list\n"
@@ -101,6 +109,22 @@ int main(int argc, char **argv)
   opentty( tty_devicename );
   vito_init();
 #endif
+
+
+  /*
+   * Create savestate directory
+   */
+//  struct stat st = {0};
+//  if (stat("/var/lib/vitalk", &st) == -1)
+//    mkdir("/var/lib/vitalk", 0755);
+
+
+  /*
+   * Enable GPIO pins
+   */
+  GPIOExport(17); // valve open
+  GPIOExport(27); // valve close
+  GPIOExport(22); // state led
 
 
   // Das machen wir sicherheitshalber erst nach vito_init(), fuer den Fall dass

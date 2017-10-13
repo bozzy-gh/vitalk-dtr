@@ -191,8 +191,8 @@ void telnet_task( void )
           }
           else
           {
-            fprintf(stdout, "New connection from %s on socket %d\n",
-              inet_ntoa(clientaddr.sin_addr), fd_new);
+//            fprintf(stdout, "New connection from %s on socket %d\n",
+//              inet_ntoa(clientaddr.sin_addr), fd_new);
             FD_SET(fd_new, &master_fds); /* add to master set */
             buffers[i][0]='\0';
             buf_ptr[i] = 0;
@@ -208,7 +208,7 @@ void telnet_task( void )
           if ( result < 0 )
             fprintf( stderr, "recv() error: %s\n", strerror(errno));
           // Connection was terminated:
-          fprintf(stdout, "Socket %d hung up.\n", i);
+//          fprintf(stdout, "Socket %d hung up.\n", i);
           close(i);
           FD_CLR(i, &master_fds);
         }

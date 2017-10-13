@@ -1,10 +1,10 @@
 [Unit]
-Description=Viessmann Remote Data Server
+Description=Viessmann+DTR Remote Data Server
 After=multi-user.target
 
 [Service]
 Type=simple
-ExecStart=/home/pi/vitalk/vitalk -t /dev/ttyAMA0 -p 83
+ExecStart=/home/pi/vitalk-dtr/vitalk-dtr -t /dev/ttyAMA0 -p 83
 RestartSec=5
 TimeoutStartSec=30
 Restart=always
