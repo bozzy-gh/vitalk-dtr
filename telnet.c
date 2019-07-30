@@ -61,6 +61,7 @@ static void print_help( int fd )
     "       P_HEATING    5\n"
     "       P_BURNER     6\n"
     "       P_HYDRAULIC  7\n"
+    "       P_SOLAR      8\n"
     "  rg <address> [<bytes>]  - Query RAW Memory Address\n"
     "  rs <address> <value(s)> - Set RAW Memory Address\n"
     "  q, quit, exit           - Quit session\n"

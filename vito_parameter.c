@@ -699,45 +699,132 @@ const char * const write_pp_min( const char *value_str )
     return "OK";
 }
 
+/////////////////// SOLAR CIRCUIT
+/* -------------------------------- */
+// solar_puffer_top_temp
+const char * const read_sol_top_temp( void )
+{
+  static char cache[6];
+  prologue()
+    if ( vito_read( 0x10000, 2, vitomem) < 0 )
+      return "NULL";
+  sprintf( cache, "%3.2f", ( vitomem[0] + (vitomem[1] << 8)) / 10.0 );
+  epilogue()
+}
+
+/* -------------------------------- */
+// solar_puffer_bottom_temp
+const char * const read_sol_bottom_temp( void )
+{
+  static char cache[6];
+  prologue()
+    if ( vito_read( 0x10000, 2, vitomem) < 0 )
+      return "NULL";
+  sprintf( cache, "%3.2f", ( vitomem[0] + (vitomem[1] << 8)) / 10.0 );
+  epilogue()
+}
+
+/* -------------------------------- */
+// solar_collector_temp
+const char * const read_sol_collector_temp( void )
+{
+  static char cache[6];
+  prologue()
+    if ( vito_read( 0x10000, 2, vitomem) < 0 )
+      return "NULL";
+  sprintf( cache, "%3.2f", ( vitomem[0] + (vitomem[1] << 8)) / 10.0 );
+  epilogue()
+}
+
+/* -------------------------------- */
+// solar_flow_temp
+const char * const read_sol_flow_temp( void )
+{
+  static char cache[6];
+  prologue()
+    if ( vito_read( 0x10000, 2, vitomem) < 0 )
+      return "NULL";
+  sprintf( cache, "%3.2f", ( vitomem[0] + (vitomem[1] << 8)) / 10.0 );
+  epilogue()
+}
+
+/* -------------------------------- */
+// solar valve state (numeric)
+const char * const read_sol_ventil( void )
+{
+  static char cache[5];
+  prologue()
+    if ( vito_read( 0x10003, 1, vitomem) < 0 )
+      return "NULL";
+
+  sprintf( cache, "%u", vitomem[0] );
+  epilogue()
+}
+
+/* -------------------------------- */
+// solar valve state (text)
+const char * const read_sol_ventil_text( void )
+{
+  const char *result;
+
+  result = read_sol_ventil();
+
+  if ( strcmp( result, "NULL" ) == 0 )
+    return "NULL";
+
+  switch (atoi(result))
+    {
+    case 0: return "closed";
+    case 1: return "opened";
+    default: return "UNKNOWN";
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // obacht: maximale Befehlslaenge 20 Zeichen, sonst klemmt der telnet-parser
 // know to work for deviceid: 0x20cb
 const struct s_parameter parameter_liste[] = {
-  { "errors", "Error History (numerisch)", "", P_ERRORS, &read_errors, NULL },
-  { "errors_text", "Error History (text)", "", P_ERRORS, &read_errors_text, NULL },
+  { "errors", "Error history (numeric)", "", P_ERRORS, &read_errors, NULL },
+  { "errors_text", "Error history (text)", "", P_ERRORS, &read_errors_text, NULL },
   { "deviceid", "Device ID", "", P_GENERAL, &read_deviceid, NULL },
   { "system_time", "System time", "", P_GENERAL, &read_systemtime, &write_systemtime },
-  { "mode", "operating mode (numerisch)", "", P_GENERAL, &read_mode, &write_mode },
-  { "eco_mode", "Econimic Mode", "", P_GENERAL, &read_eco_mode, &write_eco_mode },
+  { "mode", "Operating mode (numeric)", "", P_GENERAL, &read_mode, &write_mode },
+  { "eco_mode", "Econimic mode", "", P_GENERAL, &read_eco_mode, &write_eco_mode },
   { "party_mode", "Party mode", "", P_GENERAL, &read_party_mode, &write_party_mode },
-  { "mode_text", "operating mode (text)", "", P_GENERAL, &read_mode_text, NULL },
+  { "mode_text", "Operating mode (text)", "", P_GENERAL, &read_mode_text, NULL },
   { "indoor_temp", "Indoor temperature", "°C", P_GENERAL, &read_indoor_temp, NULL },
   { "outdoor_temp", "Outdoor temperature", "°C", P_GENERAL, &read_outdoor_temp, NULL },
-  { "outdoor_temp_lp", "Outdoor temp / low_pass", "°C", P_GENERAL, &read_outdoor_temp_tp, NULL },
-  { "outdoor_temp_smooth", "Outdoor temp / smooth", "°C", P_GENERAL, &read_outdoor_temp_smooth, NULL },
+  { "outdoor_temp_lp", "Outdoor temp (low pass)", "°C", P_GENERAL, &read_outdoor_temp_tp, NULL },
+  { "outdoor_temp_smooth", "Outdoor temp (smooth)", "°C", P_GENERAL, &read_outdoor_temp_smooth, NULL },
   { "boiler_temp", "Boiler temperature", "°C", P_BOILER, &read_k_ist_temp, NULL },
-  { "boiler_temp_lp", "Boiler temp _ low pass", "°C", P_BOILER, &read_k_ist_temp_tp, NULL },
+  { "boiler_temp_lp", "Boiler temp (low pass)", "°C", P_BOILER, &read_k_ist_temp_tp, NULL },
   { "set_boiler_temp", "Boiler setpoint temperature", "°C", P_BOILER, &read_k_soll_temp, NULL },
   { "boiler_gaz_temp", "Boiler flue gas temperature", "°C", P_BOILER, &read_abgas_temp, NULL },
   { "hot_water_set", "Hot water setting", "°C", P_HOTWATER, &read_ww_soll_temp, &write_ww_soll_temp },
   { "hot_water_temp", "Hot water temperature", "°C", P_HOTWATER, &read_ww_ist_temp, NULL },
-  { "hot_water_temp_lp", "Hot water temperature low_pass", "°C", P_HOTWATER, &read_ww_ist_temp_tp, NULL },
-  { "boiler_offet", "boiler Offset", "K", P_HOTWATER, &read_ww_offset, NULL },
-  { "flow_temp_set", "flow temp setting", "°C", P_HEATING, &read_vl_soll_temp, NULL },
-  { "norm_room_temp", "room temp setting", "°C", P_HEATING, &read_raum_soll_temp, &write_raum_soll_temp },
-  { "red_room_temp", "reduced room temp setting", "°C", P_HEATING, &read_red_raum_soll_temp, &write_red_raum_soll_temp },
+  { "hot_water_temp_lp", "Hot water temp (low pass)", "°C", P_HOTWATER, &read_ww_ist_temp_tp, NULL },
+  { "boiler_offet", "Boiler offset", "K", P_HOTWATER, &read_ww_offset, NULL },
+  { "flow_temp_set", "Flow temp setting", "°C", P_HEATING, &read_vl_soll_temp, NULL },
+  { "norm_room_temp", "Room temp setting", "°C", P_HEATING, &read_raum_soll_temp, &write_raum_soll_temp },
+  { "red_room_temp", "Reduced room temp setting", "°C", P_HEATING, &read_red_raum_soll_temp, &write_red_raum_soll_temp },
   { "curve_level", "Curve level", "K", P_HEATING, &read_niveau, NULL },
   { "curve_slope", "Curve  slope", "", P_HEATING, &read_neigung, NULL },
   { "pp_max", "Maximal pomp power", "%", P_HEATING, &read_pp_max, &write_pp_max },
   { "pp_min", "Minimal pomp power", "%", P_HEATING, &read_pp_min, &write_pp_min },
-  { "starts", "Heater Starts", "", P_BURNER, &read_starts, NULL },
+  { "starts", "Heater starts", "", P_BURNER, &read_starts, NULL },
   { "runtime_h", "Runtime in hours", "h", P_BURNER, &read_runtime_h, NULL },
   { "runtime", "Runtime in seconds", "s", P_BURNER, &read_runtime, NULL },
   { "power", "Power in %", "%", P_BURNER, &read_power, NULL },
-  { "valve_setting", "valve setting", "", P_HYDRAULIC, &read_ventil, NULL },
-  { "valve_setting_text", "valve setting / text", "", P_HYDRAULIC, &read_ventil_text, NULL },
+  { "valve_setting", "Valve setting (numeric)", "", P_HYDRAULIC, &read_ventil, NULL },
+  { "valve_setting_text", "Valve setting (text)", "", P_HYDRAULIC, &read_ventil_text, NULL },
   { "pump_power", "Pump power", "%", P_HYDRAULIC, &read_pump_power, NULL },
 /*  { "flow", "Volumenstrom", "l/h", P_HYDRAULIC, &read_flow, NULL }, */
+  { "sol_top_temp", "Solar puffer top temp", "°C", P_SOLAR, &read_sol_top_temp, NULL },
+  { "sol_bottom_temp", "Solar puffer bottom temp", "°C", P_SOLAR, &read_sol_bottom_temp, NULL },
+  { "sol_collector_temp", "Solar collector temp", "°C", P_SOLAR, &read_sol_collector_temp, NULL },
+  { "sol_flow_temp", "Solar flow temp", "°C", P_SOLAR, &read_sol_flow_temp, NULL },
+  { "sol_valve_state", "Solar valve state (numeric)", "", P_SOLAR, &read_sol_ventil, NULL },
+  { "sol_valve_state_text", "Solar valve state (text)", "", P_SOLAR, &read_sol_ventil_text, NULL },
   { NULL, NULL, NULL, 0, NULL, NULL }
 };
 

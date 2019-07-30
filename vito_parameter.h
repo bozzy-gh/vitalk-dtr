@@ -27,6 +27,7 @@ extern const struct s_parameter parameter_liste[];
 #define P_HEATING    5
 #define P_BURNER     6
 #define P_HYDRAULIC  7
+#define P_SOLAR      8
 
 #define FROMBCD(x)      (((x) >> 4) * 10 + ((x) & 0xf))
 #define TOBCD(x)        (((x) / 10 * 16) + ((x) % 10))
