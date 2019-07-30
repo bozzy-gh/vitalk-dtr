@@ -706,7 +706,7 @@ const char * const read_sol_top_temp( void )
 {
   static char cache[6];
   prologue()
-    if ( vito_read( 0x10000, 2, vitomem) < 0 )
+    if ( vito_dtr_read( 0x0000, 2, vitomem) < 0 )
       return "NULL";
   sprintf( cache, "%3.2f", ( vitomem[0] + (vitomem[1] << 8)) / 10.0 );
   epilogue()
@@ -718,7 +718,7 @@ const char * const read_sol_bottom_temp( void )
 {
   static char cache[6];
   prologue()
-    if ( vito_read( 0x10000, 2, vitomem) < 0 )
+    if ( vito_read( 0x6566, 2, vitomem) < 0 )
       return "NULL";
   sprintf( cache, "%3.2f", ( vitomem[0] + (vitomem[1] << 8)) / 10.0 );
   epilogue()
@@ -730,7 +730,7 @@ const char * const read_sol_collector_temp( void )
 {
   static char cache[6];
   prologue()
-    if ( vito_read( 0x10000, 2, vitomem) < 0 )
+    if ( vito_read( 0x6564, 2, vitomem) < 0 )
       return "NULL";
   sprintf( cache, "%3.2f", ( vitomem[0] + (vitomem[1] << 8)) / 10.0 );
   epilogue()
@@ -742,9 +742,47 @@ const char * const read_sol_flow_temp( void )
 {
   static char cache[6];
   prologue()
-    if ( vito_read( 0x10000, 2, vitomem) < 0 )
+    if ( vito_read( 0xCF90, 8, vitomem) < 0 )
+      return "NULL";
+  sprintf( cache, "%3.2f", ( vitomem[6] + (vitomem[7] << 8)) / 10.0 );
+  epilogue()
+}
+
+/* -------------------------------- */
+// boiler return temp (used by solar system)
+const char * const read_return_temp( void )
+{
+  static char cache[6];
+  prologue()
+    if ( vito_dtr_read( 0x0001, 2, vitomem) < 0 )
       return "NULL";
   sprintf( cache, "%3.2f", ( vitomem[0] + (vitomem[1] << 8)) / 10.0 );
+  epilogue()
+}
+
+/* -------------------------------- */
+// solar main pump state
+const char * const read_sol_main_pump( void )
+{
+  static char cache[5];
+  prologue()
+    if ( vito_read( 0x6552, 1, vitomem) < 0 )
+      return "NULL";
+
+  sprintf( cache, "%u", vitomem[0] );
+  epilogue()
+}
+
+/* -------------------------------- */
+// solar load pump state
+const char * const read_sol_load_pump( void )
+{
+  static char cache[5];
+  prologue()
+    if ( vito_read( 0xCF90, 3, vitomem) < 0 )
+      return "NULL";
+
+  sprintf( cache, "%u", vitomem[2] );
   epilogue()
 }
 
@@ -754,7 +792,7 @@ const char * const read_sol_ventil( void )
 {
   static char cache[5];
   prologue()
-    if ( vito_read( 0x10003, 1, vitomem) < 0 )
+    if ( vito_dtr_read( 0x0003, 1, vitomem) < 0 )
       return "NULL";
 
   sprintf( cache, "%u", vitomem[0] );
@@ -823,6 +861,9 @@ const struct s_parameter parameter_liste[] = {
   { "sol_bottom_temp", "Solar puffer bottom temp", "°C", P_SOLAR, &read_sol_bottom_temp, NULL },
   { "sol_collector_temp", "Solar collector temp", "°C", P_SOLAR, &read_sol_collector_temp, NULL },
   { "sol_flow_temp", "Solar flow temp", "°C", P_SOLAR, &read_sol_flow_temp, NULL },
+  { "return_temp", "Boiler return temp", "°C", P_SOLAR, &read_return_temp, NULL },
+  { "sol_main_pump_state", "Solar main pump state", "", P_SOLAR, &read_sol_main_pump, NULL },
+  { "sol_load_pump_state", "Solar load pump state", "", P_SOLAR, &read_sol_load_pump, NULL },
   { "sol_valve_state", "Solar valve state (numeric)", "", P_SOLAR, &read_sol_ventil, NULL },
   { "sol_valve_state_text", "Solar valve state (text)", "", P_SOLAR, &read_sol_ventil_text, NULL },
   { NULL, NULL, NULL, 0, NULL, NULL }
