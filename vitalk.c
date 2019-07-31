@@ -9,6 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "vito_io.h"
+#include "vito_dtr.h"
 #include "telnet.h"
 #include "vito_parameter.h"
 #include "version.h"
@@ -125,6 +126,11 @@ int main(int argc, char **argv)
   GPIOExport(17); // valve open
   GPIOExport(27); // valve close
   GPIOExport(22); // state led
+
+  // Initialize solar valve state by closing it
+  uint8_t content[1];
+  content[0] = 0;
+  vito_dtr_write(3, 1, content);
 
 
   // Das machen wir sicherheitshalber erst nach vito_init(), fuer den Fall dass
