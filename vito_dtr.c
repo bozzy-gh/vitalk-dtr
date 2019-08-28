@@ -116,6 +116,13 @@ int dtr_read( int location, uint8_t *vitomem )
 
 int valve_open()
 {
+    /*
+     * Set GPIO directions
+     */
+    GPIODirection(17, GPIO_OUT);
+    GPIODirection(27, GPIO_OUT);
+    GPIODirection(22, GPIO_OUT);
+
     if ((-1 == GPIOWrite(17, 0)) || (-1 == GPIOWrite(27, 0)))
         return(-1);
 
@@ -137,9 +144,18 @@ void *valve_open_t(void *threadid)
     if (valvemutex == 0)
     {
         valvemutex = 1;
+
+        /*
+         * Set GPIO directions
+         */
+        GPIODirection(17, GPIO_OUT);
+        GPIODirection(27, GPIO_OUT);
+        GPIODirection(22, GPIO_OUT);
+
         if (!((-1 == GPIOWrite(17, 0)) || (-1 == GPIOWrite(27, 0))))
             if (!(-1 == GPIOWrite(17, 1)))
             {
+                valvestate = 1;
                 GPIOWrite(22, 1);
                 sleep(10);
                 GPIOWrite(17, 0);
@@ -147,11 +163,19 @@ void *valve_open_t(void *threadid)
         valvemutex = 0;
     }
 
-    pthread_exit(NULL);
+//    pthread_exit(NULL);
+    return NULL;
 }
 
 int valve_close()
 {
+    /*
+     * Set GPIO directions
+     */
+    GPIODirection(17, GPIO_OUT);
+    GPIODirection(27, GPIO_OUT);
+    GPIODirection(22, GPIO_OUT);
+
     if ((-1 == GPIOWrite(17, 0)) || (-1 == GPIOWrite(27, 0)))
         return(-1);
 
@@ -173,17 +197,27 @@ void *valve_close_t(void *threadid)
     if (valvemutex == 0)
     {
         valvemutex = 1;
+
+        /*
+         * Set GPIO directions
+         */
+        GPIODirection(17, GPIO_OUT);
+        GPIODirection(27, GPIO_OUT);
+        GPIODirection(22, GPIO_OUT);
+
         if (!((-1 == GPIOWrite(17, 0)) || (-1 == GPIOWrite(27, 0))))
             if (!(-1 == GPIOWrite(27, 1)))
             {
+                valvestate = 0;
+                GPIOWrite(22, 0);
                 sleep(8);
-                if (!(-1 == GPIOWrite(27, 0)))
-                    GPIOWrite(22, 0);
+                GPIOWrite(27, 0);
             }
         valvemutex = 0;
     }
 
-    pthread_exit(NULL);
+//    pthread_exit(NULL);
+    return NULL;
 }
 
 int valve_cycle()
@@ -257,9 +291,9 @@ int vito_dtr_write( int location, int size, uint8_t *vitomem )
         /*
          * Set GPIO directions
          */
-        GPIODirection(17, GPIO_OUT);
-        GPIODirection(27, GPIO_OUT);
-        GPIODirection(22, GPIO_OUT);
+//        GPIODirection(17, GPIO_OUT);
+//        GPIODirection(27, GPIO_OUT);
+//        GPIODirection(22, GPIO_OUT);
 
         /*
          * Write GPIO value
@@ -273,7 +307,7 @@ int vito_dtr_write( int location, int size, uint8_t *vitomem )
                 if (trc)
                     return(-1);
                 //pthread_exit(NULL);
-                valvestate = 0;
+                //valvestate = 0;
                 break;
             case 1:
                 //if (valve_open() < 0)
@@ -282,7 +316,7 @@ int vito_dtr_write( int location, int size, uint8_t *vitomem )
                 if (trc)
                     return(-1);
                 //pthread_exit(NULL);
-                valvestate = 1;
+                //valvestate = 1;
                 break;
             case 2:
                 if (valve_cycle() < 0)

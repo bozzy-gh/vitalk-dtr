@@ -4,7 +4,7 @@ vitalk
 Communication with Vitosolar 200 (VScotHO1, 20CB) and custom DTR via Optolink. This is also an english port of this software.
 This version has been translated in english and also support raw get, raw set and quit (`rg`, `rs`, `q` commands).
 
-This application works for `Ox20CB` (`VScotHO1`) Viessmann device heater based on P300 protocol.
+This application works for `0x20CB` (`VScotHO1`) Viessmann device heater based on P300 protocol.
 
 It also integrates control for a custom made Differential Temperature Regulator module that replaces the original (static) Viessmann one. The custom DTR module can be controlled dynamically in function of data read from the main interface and other custom needs (eg. solar hot water can be sent to the radiant floor at temperatures below 40°C, which makes sense and is not possible with the original module).
 
