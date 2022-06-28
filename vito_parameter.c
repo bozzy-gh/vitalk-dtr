@@ -69,7 +69,7 @@ const char * const read_deviceid( void )
 /* -------------------------------- */
 const char * const read_systemtime( void )
 {
-  static char cache[16];
+  static char cache[17];
   prologue()
     if ( vito_read( 0x088e, 8, vitomem ) < 0 )
       return "NULL";

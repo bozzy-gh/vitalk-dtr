@@ -11,8 +11,6 @@
 #include "telnet.h"
 
 
-short unsigned int vitalkport;
-
 extern fd_set master_fds; /* file descriptor list for select() */
 extern fd_set read_fds;   /* select() call result */
 

@@ -11,6 +11,8 @@
 #include <linux/i2c-dev.h>
 #include <stdlib.h>
 #include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <i2c/smbus.h>
 
 #include "gpio.h"
 
